@@ -2,6 +2,15 @@ provider "azurerm" {
   features {}
 }
 
+terraform {
+  required_providers {
+    time = {
+      source  = "hashicorp/time"
+      version = "0.7.2"  # Make sure to use the version that match latest version
+    }
+  }
+}
+
 variable "location" {
   default = "East US"
 }
@@ -20,6 +29,11 @@ variable "admin_username" {
 variable "admin_password" {
   default = "Password123!"
 }
+
+resource "time_sleep" "wait_for_ip" {
+  create_duration = "30s"  # Wait for 30 seconds
+}
+
 
 resource "azurerm_resource_group" "rg-ofer" {
   name     = "${var.myname}-resources"
@@ -93,6 +107,7 @@ resource "azurerm_linux_virtual_machine" "vm-ofer" {
 
 output "vm_public_ip" {
   value = azurerm_public_ip.pip-ofer.ip_address
+  depends_on  = [time_sleep.wait_for_ip]  # Wait for the time_sleep resource to complete
   description = "Public IP address of the VM"
 }
 
